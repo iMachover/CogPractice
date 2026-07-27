@@ -48,12 +48,12 @@ public class BankAppRunner {
     }
 
     private static void customerDashboard(String loggedinUsername) {
-        printMessage("Welcome, " + loggedinUsername + "to your customer dashboard");
+        printMessage("Welcome, " + loggedinUsername + " to your customer dashboard");
         // using SwitchCase present different customer menu options
     }
 
     private static void adminDashboard(String loggedinUsername) {
-        printMessage("Welcome, " + loggedinUsername + "to admin dashboard");
+        printMessage("Welcome, " + loggedinUsername + " to admin dashboard");
         // using SwitchCase present different admin menu options
     }
 
@@ -70,10 +70,6 @@ public class BankAppRunner {
             String password = me.getValue();
             if (username.equals(enteredUsername) && password.equals(enteredPassword)) {
                 return username;
-            } else if (username.equals(enteredUsername) && !password.equals(enteredPassword)) {
-                System.out.println("Invalid Password");
-            } else if (!username.equals(enteredUsername) && password.equals(enteredPassword)) {
-                System.out.println("Invalid Username");
             }
         }
 
@@ -119,9 +115,32 @@ class Bank {
 // Class Admin extends User
 // Class Customer extends User
 
-// Abstract Class Account
-// CheckingsAccount extends Account
-// SavingsAccount extends Account
+abstract class Account {
+    private double balance;
 
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    public double getBalance(){
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+}
+
+class CheckingAccount extends Account {
+    public CheckingAccount(double balance) {
+        super(balance);
+    }
+}
+
+class SavingsAccount extends Account {
+    public SavingsAccount(double balance) {
+        super(balance);
+    }
+}
 // Interface AccountOperations: printInterestRate(), deposit, withdraw, transfer
 // SavingsAccount always gives higher interest rate
