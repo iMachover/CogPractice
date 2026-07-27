@@ -28,10 +28,7 @@ public class BankAppRunner {
             redirect(loggedInUser);
             //
 
-            System.out.println("Do you want to continue or not? Y/N");
-            if (sc.nextLine().equalsIgnoreCase("N")) {
-                overallLoopFlag = false;
-            }
+            overallLoopFlag = promptYesNo("Do you want to continue or not? Y/N");
         }
 
     }
@@ -40,22 +37,90 @@ public class BankAppRunner {
         if (loggedInUser == null) {
             printMessage("Invalid Credentials!");
         } else if (loggedInUser instanceof Admin) {
-            adminDashboard(String.valueOf(loggedInUser));
+            adminDashboard(loggedInUser);
         } else {
-            customerDashboard(String.valueOf(loggedInUser));
+            customerDashboard(loggedInUser);
         }
     }
 
-    private static void customerDashboard(String loggedinUsername) {
-        printMessage("Welcome, " + loggedinUsername + " to your customer dashboard");
-        int choice = RunBankChoices();
-        // using SwitchCase present different customer menu options
-        printMessage("Customer choice returned: " + choice);
+    private static void customerDashboard(User loggedInUser) {
+        Customer customer = (Customer) loggedInUser;
+        printMessage("Welcome, " + customer.getUsername() + " to your customer dashboard");
+
+        boolean continueMenu = true;
+        while (continueMenu) {
+            int choice = RunBankChoices();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter deposit amount for CHECKING: ");
+                    try {
+                        double checkingDeposit = Double.parseDouble(sc.nextLine());
+                        customer.getCheckingAccount().deposit(checkingDeposit);
+                    } catch (NumberFormatException e) {
+                        printMessage("Invalid amount. Please enter a number.");
+                    }
+                    break;
+                case 2:
+                    System.out.print("Enter withdrawal amount for CHECKING: ");
+                    try {
+                        double checkingWithdraw = Double.parseDouble(sc.nextLine());
+                        customer.getCheckingAccount().withdraw(checkingWithdraw);
+                    } catch (NumberFormatException e) {
+                        printMessage("Invalid amount. Please enter a number.");
+                    }
+                    break;
+                case 3:
+                    System.out.print("Enter deposit amount for SAVINGS: ");
+                    try {
+                        double savingsDeposit = Double.parseDouble(sc.nextLine());
+                        customer.getSavingsAccount().deposit(savingsDeposit);
+                    } catch (NumberFormatException e) {
+                        printMessage("Invalid amount. Please enter a number.");
+                    }
+                    break;
+                case 4:
+                    System.out.print("Enter withdrawal amount for SAVINGS: ");
+                    try {
+                        double savingsWithdraw = Double.parseDouble(sc.nextLine());
+                        customer.getSavingsAccount().withdraw(savingsWithdraw);
+                    } catch (NumberFormatException e) {
+                        printMessage("Invalid amount. Please enter a number.");
+                    }
+                    break;
+                case 5:
+                    System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
+                    break;
+                case 6:
+                    System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+                    break;
+                case -1:
+                    continueMenu = false;
+                    break;
+                default:
+                    System.out.println("Invalid selection.");
+            }
+        }
     }
 
-    private static void adminDashboard(String loggedInUsername) {
+    private static void adminDashboard(User loggedInUsername) {
         printMessage("Welcome, " + loggedInUsername + " to admin dashboard");
         RunAdminChoices();
+    }
+
+    private static boolean promptYesNo(String prompt) {
+        while (true) {
+            System.out.println(prompt);
+            String input = sc.nextLine().trim();
+
+            if (input.equalsIgnoreCase("Y")) {
+                return true;
+            } else if (input.equalsIgnoreCase("N")) {
+                return false;
+            } else {
+                System.out.println("Please enter Y or N.");
+            }
+        }
     }
 
     private static void RunAdminChoices() {
@@ -78,7 +143,6 @@ public class BankAppRunner {
 
                 Customer customer = (Customer) user;
 
-
                 System.out.println("Username: " + customer.getUsername());
                 System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
                 System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
@@ -94,10 +158,7 @@ public class BankAppRunner {
                 }
             }
 
-            System.out.println("Look up another customer? Y/N");
-            if (!sc.nextLine().equalsIgnoreCase("Y")) {
-                continueLookup = false;
-            }
+            continueLookup = promptYesNo("Look up another customer? Y/N");
         }
     }
 
@@ -148,38 +209,37 @@ public class BankAppRunner {
     }
 }
 
+abstract class User {
+    private String username;
+    private String password;
 
-        abstract class User {
-            private String username;
-            private String password;
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 
-            public User(String username, String password) {
-                this.username = username;
-                this.password = password;
-            }
+    public String getUsername() {
+        return username;
+    }
 
-            public String getUsername() {
-                return username;
-            }
+    public String getPassword() {
+        return password;
+    }
 
-            public String getPassword() {
-                return password;
-            }
+    // Forces subclasses to define their own behavior
+    public abstract String getRole();
+}
 
-            // Forces subclasses to define their own behavior
-            public abstract String getRole();
-        }
+class Admin extends User {
+    public Admin(String username, String password) {
+        super(username, password);
+    }
 
-        class Admin extends User {
-            public Admin(String username, String password) {
-                super(username, password);
-            }
-
-            @Override
-            public String getRole() {
-                return "ADMIN";
-            }
-        }
+    @Override
+    public String getRole() {
+        return "ADMIN";
+    }
+}
 
 class Customer extends User {
     private CheckingAccount checkingAccount;
@@ -204,7 +264,6 @@ class Customer extends User {
         return savingsAccount;
     }
 }
-
 
 abstract class Account implements AccountOperations {
     private double balance;
@@ -295,8 +354,11 @@ class SavingsAccount extends Account {
 
 interface AccountOperations {
     void deposit(double amount);
+
     void withdraw(double amount);
+
     void transfer(Account destination, double amount);
+
     void printInterestRate();
 }
 
