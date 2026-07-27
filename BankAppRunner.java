@@ -55,19 +55,40 @@ public class BankAppRunner {
 
     private static void adminDashboard(String loggedInUsername) {
         printMessage("Welcome, " + loggedInUsername + " to admin dashboard");
-        int choice = RunAdminChoices();
-        // using SwitchCase present different admin menu options
-        printMessage("Admin choice returned: " + choice);
+        RunAdminChoices();
     }
 
-    private static int RunAdminChoices() {
-        int choice;
-
+    private static void RunAdminChoices() {
         System.out.println("*******************************************");
-        System.out.println("Enter a customer's username to see all available information");
-        String customer = sc.nextLine();
+        System.out.println("Enter a customer's username to see all available information (or -1 to quit)");
+        String customerUsername = sc.nextLine();
 
-        System.out.println("Looking up: " + customer);
+        if (customerUsername.equals("-1")) {
+            return;
+        }
+
+        User user = map.get(customerUsername);
+
+        if (user == null || !(user instanceof Customer)) {
+            printMessage("No customer found with username: " + customerUsername);
+            return;
+        }
+
+        Customer customer = (Customer) user;
+
+        System.out.println("Username: " + customer.getUsername());
+        System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
+        System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+
+        System.out.println("Checking transaction history:");
+        for (String tx : customer.getCheckingAccount().getTransactionHistory()) {
+            System.out.println("  - " + tx);
+        }
+
+        System.out.println("Savings transaction history:");
+        for (String tx : customer.getSavingsAccount().getTransactionHistory()) {
+            System.out.println("  - " + tx);
+        }
     }
 
     private static int RunBankChoices() {
