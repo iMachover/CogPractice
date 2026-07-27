@@ -56,9 +56,19 @@ public class BankAppRunner {
 
     private static void adminDashboard(String loggedInUsername) {
         printMessage("Welcome, " + loggedInUsername + " to admin dashboard");
-        int choice = RunBankChoices();
+        int choice = RunAdminChoices();
         // using SwitchCase present different admin menu options
         printMessage("Admin choice returned: " + choice);
+    }
+
+    private static int RunAdminChoices() {
+        int choice;
+
+        System.out.println("*******************************************");
+        System.out.println("Enter a customer's username to see all available information");
+        String customer = sc.nextLine();
+
+        System.out.println( /*name, checking balance, savings balance, transaction history*/)
     }
 
     private static int RunBankChoices() {
@@ -112,53 +122,112 @@ public class BankAppRunner {
     }
 }
 
-class Bank {
-    private int id;
-    private String name;
 
-    public Bank(int id, String name) {// 1,"ABC Digital Bank"
-        this.id = id;
-        this.name = name;
-    }
+        abstract class User {
+            private String username;
+            private String password;
 
-    public Bank() {
+            public User(String username, String password) {
+                this.username = username;
+                this.password = password;
+            }
 
-    }
+            public String getUsername() {
+                return username;
+            }
 
-    public int getId() {
-        return id;
-    }
+            public String getPassword() {
+                return password;
+            }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+            // Forces subclasses to define their own behavior
+            public abstract String getRole();
+        }
 
-    public String getName() {
-        return name;
-    }
+        class Admin extends User {
+            public Admin(String username, String password) {
+                super(username, password);
+            }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-}
+            @Override
+            public String getRole() {
+                return "ADMIN";
+            }
+        }
 
-// Abstract Class User: username, password, isAdmin:true/false
-// Class Admin extends User
-// Class Customer extends User
+        class Customer extends User {
+            private CheckingAccount checkingAccount;
+            private SavingsAccount savingsAccount;
 
-abstract class Account {
+            public Customer(String username, String password) {
+                super(username, password);
+            }
+
+            @Override
+            public String getRole() {
+                return "CUSTOMER";
+            }
+
+            public CheckingAccount getCheckingAccount() {
+                return checkingAccount;
+            }
+
+            public SavingsAccount getSavingsAccount() {
+                return savingsAccount;
+            }
+        }
+
+
+abstract class Account implements AccountOperations {
     private double balance;
+    private List<String> transactionHistory;
 
     public Account(double balance) {
         this.balance = balance;
+        this.transactionHistory = new ArrayList<>();
     }
 
-    public double getBalance(){
+    @Override
+    public void deposit(double amount) {
+        this.balance += amount;
+        transactionHistory.add("Deposited $" + amount);
+    }
+
+    @Override
+    public void withdraw(double amount) {
+        if (amount <= this.balance) {
+            this.balance -= amount;
+            transactionHistory.add("Withdrew $" + amount);
+        } else {
+            System.out.println("Insufficient funds.");
+        }
+    }
+
+    @Override
+    public void transfer(Account destination, double amount) {
+        if (amount <= this.balance) {
+            this.withdraw(amount);
+            destination.deposit(amount);
+            transactionHistory.add("Transferred $" + amount + " to another account");
+        } else {
+            System.out.println("Insufficient funds for transfer.");
+        }
+    }
+
+    // no default implementation — forces each subclass to define it
+    @Override
+    public abstract void printInterestRate();
+
+    public double getBalance() {
         return balance;
     }
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public List<String> getTransactionHistory() {
+        return transactionHistory;
     }
 }
 
@@ -166,12 +235,41 @@ class CheckingAccount extends Account {
     public CheckingAccount(double balance) {
         super(balance);
     }
+
+    @Override
+    public void printInterestRate() {
+        System.out.println("Checking accounts do not earn interest.");
+    }
 }
 
 class SavingsAccount extends Account {
+    private double interestRate;
+
     public SavingsAccount(double balance) {
+        this(balance, 0.02);
+    }
+
+    public SavingsAccount(double balance, double interestRate) {
         super(balance);
+        this.interestRate = interestRate;
+    }
+
+    public void applyInterest() {
+        double interest = getBalance() * interestRate;
+        deposit(interest);
+    }
+
+    @Override
+    public void printInterestRate() {
+        System.out.println("Interest rate: " + (interestRate * 100) + "%");
     }
 }
-// Interface AccountOperations: printInterestRate(), deposit, withdraw, transfer
+
+interface AccountOperations {
+    void deposit(double amount);
+    void withdraw(double amount);
+    void transfer(Account destination, double amount);
+    void printInterestRate();
+}
+
 // SavingsAccount always gives higher interest rate
