@@ -94,6 +94,12 @@ public class BankAppRunner {
                 case 6:
                     System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
                     break;
+                case 7:
+                    System.out.println("--- Checking ---");
+                    customer.getCheckingAccount().printInterestRate();
+                    System.out.println("--- Savings ---");
+                    customer.getSavingsAccount().printInterestRate();
+                    break;
                 case -1:
                     continueMenu = false;
                     break;
@@ -103,8 +109,8 @@ public class BankAppRunner {
         }
     }
 
-    private static void adminDashboard(User loggedInUsername) {
-        printMessage("Welcome, " + loggedInUsername + " to admin dashboard");
+    private static void adminDashboard(User loggedInUser) {
+        printMessage("Welcome, " + loggedInUser.getUsername() + " to admin dashboard");
         RunAdminChoices();
     }
 
@@ -361,5 +367,3 @@ interface AccountOperations {
 
     void printInterestRate();
 }
-
-// SavingsAccount always gives higher interest rate
