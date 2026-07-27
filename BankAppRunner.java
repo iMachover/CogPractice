@@ -49,12 +49,43 @@ public class BankAppRunner {
 
     private static void customerDashboard(String loggedinUsername) {
         printMessage("Welcome, " + loggedinUsername + " to your customer dashboard");
+        int choice = RunBankChoices();
         // using SwitchCase present different customer menu options
+        printMessage("Customer choice returned: " + choice);
     }
 
-    private static void adminDashboard(String loggedinUsername) {
-        printMessage("Welcome, " + loggedinUsername + " to admin dashboard");
+    private static void adminDashboard(String loggedInUsername) {
+        printMessage("Welcome, " + loggedInUsername + " to admin dashboard");
+        int choice = RunBankChoices();
         // using SwitchCase present different admin menu options
+        printMessage("Admin choice returned: " + choice);
+    }
+
+    private static int RunBankChoices() {
+        int choice;
+
+        System.out.println("*******************************************");
+        System.out.println("(1) to DEPOSIT to CHECKING ACCOUNT");
+        System.out.println("(2) to WITHDRAW from CHECKING ACCOUNT");
+        System.out.println("(3) to DEPOSIT to SAVINGS ACCOUNT");
+        System.out.println("(4) to WITHDRAW from SAVINGS ACCOUNT");
+        System.out.println("(5) to display CHECKING ACCOUNT BALANCE");
+        System.out.println("(6) to display SAVINGS ACCOUNT BALANCE");
+        System.out.println("(-1) to QUIT");
+
+        System.out.println();
+        System.out.print("Select an option: ");
+
+        try {
+            choice = Integer.parseInt(sc.nextLine());
+        } catch (NumberFormatException e) {
+            printMessage("Invalid selection. Please enter a number.");
+            return -1;
+        }
+
+        System.out.println();
+        System.out.println("You selected " + choice);
+        return choice;
     }
 
     private static String mylogin() {
