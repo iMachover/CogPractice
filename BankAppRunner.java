@@ -17,24 +17,48 @@ public class BankAppRunner {
 
     public static void main(String[] args) {
         printMessage("Welcome to our bank");
-        String loggedInUsername = mylogin();
-        // authenticateUser(loggedInUsername);
 
-        if (loggedInUsername.isEmpty()) {
-            printMessage("Invalid Credentials!");
-            System.exit(1);
-        } else {
-            if (loggedInUsername.equals("admin")) {
-                // adminDashboard();
-            } else {
-                // customerDashboard();
+        boolean overallLoopFlag = true;
+        while (overallLoopFlag) {
+            // Main Flow Logic
+            String loggedInUsername = mylogin();
+            redirect(loggedInUsername);
+            //
+
+            System.out.println("Do you want to continue or not? Y/N");
+            if (sc.nextLine().equalsIgnoreCase("N")) {
+                overallLoopFlag = false;
             }
         }
 
     }
 
+    private static void redirect(String loggedInUsername) {
+        if (loggedInUsername.isEmpty()) {
+            printMessage("Invalid Credentials!");
+            boolean overallContinueFlag = true;
+
+        } else {
+            if (loggedInUsername.equals("admin")) {
+                adminDashboard(loggedInUsername);
+            } else {
+                customerDashboard(loggedInUsername);
+            }
+        }
+    }
+
+    private static void customerDashboard(String loggedinUsername) {
+        printMessage("Welcome, " + loggedinUsername + "to your customer dashboard");
+        // using SwitchCase present different customer menu options
+    }
+
+    private static void adminDashboard(String loggedinUsername) {
+        printMessage("Welcome, " + loggedinUsername + "to admin dashboard");
+        // using SwitchCase present different admin menu options
+    }
+
     private static String mylogin() {
-        System.out.println("Please enter username and password separated by space");
+        System.out.println("Please enter username and password separated by space: ");
         String usernamePassword = sc.nextLine();
         // validation
         String[] tokens = usernamePassword.split(" ");
@@ -46,6 +70,10 @@ public class BankAppRunner {
             String password = me.getValue();
             if (username.equals(enteredUsername) && password.equals(enteredPassword)) {
                 return username;
+            } else if (username.equals(enteredUsername) && !password.equals(enteredPassword)) {
+                System.out.println("Invalid Password");
+            } else if (!username.equals(enteredUsername) && password.equals(enteredPassword)) {
+                System.out.println("Invalid Username");
             }
         }
 
