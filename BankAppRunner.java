@@ -28,9 +28,12 @@ public class BankAppRunner {
             redirect(loggedInUser);
             //
 
+            if (loggedInUser != null) {
+                printMessage("Logged out successfully.");
+            }
+
             overallLoopFlag = promptYesNo("Do you want to continue or not? Y/N");
         }
-
     }
 
     private static void redirect(User loggedInUser) {
@@ -53,39 +56,23 @@ public class BankAppRunner {
 
             switch (choice) {
                 case 1:
-                    System.out.print("Enter deposit amount for CHECKING: ");
-                    try {
-                        double checkingDeposit = Double.parseDouble(sc.nextLine());
-                        customer.getCheckingAccount().deposit(checkingDeposit);
-                    } catch (NumberFormatException e) {
-                        printMessage("Invalid amount. Please enter a number.");
-                    }
+                    customer.getCheckingAccount().deposit(getConfirmedAmount("deposit into CHECKING"));
+                    System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
                     break;
                 case 2:
-                    System.out.print("Enter withdrawal amount for CHECKING: ");
-                    try {
-                        double checkingWithdraw = Double.parseDouble(sc.nextLine());
-                        customer.getCheckingAccount().withdraw(checkingWithdraw);
-                    } catch (NumberFormatException e) {
-                        printMessage("Invalid amount. Please enter a number.");
+                    double checkingWithdrawAmt = getConfirmedAmount("withdraw from CHECKING");
+                    if (customer.getCheckingAccount().withdraw(checkingWithdrawAmt)) {
+                        System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
                     }
                     break;
                 case 3:
-                    System.out.print("Enter deposit amount for SAVINGS: ");
-                    try {
-                        double savingsDeposit = Double.parseDouble(sc.nextLine());
-                        customer.getSavingsAccount().deposit(savingsDeposit);
-                    } catch (NumberFormatException e) {
-                        printMessage("Invalid amount. Please enter a number.");
-                    }
+                    customer.getSavingsAccount().deposit(getConfirmedAmount("deposit into SAVINGS"));
+                    System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
                     break;
                 case 4:
-                    System.out.print("Enter withdrawal amount for SAVINGS: ");
-                    try {
-                        double savingsWithdraw = Double.parseDouble(sc.nextLine());
-                        customer.getSavingsAccount().withdraw(savingsWithdraw);
-                    } catch (NumberFormatException e) {
-                        printMessage("Invalid amount. Please enter a number.");
+                    double savingsWithdrawAmt = getConfirmedAmount("withdraw from SAVINGS");
+                    if (customer.getSavingsAccount().withdraw(savingsWithdrawAmt)) {
+                        System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
                     }
                     break;
                 case 5:
@@ -100,11 +87,59 @@ public class BankAppRunner {
                     System.out.println("--- Savings ---");
                     customer.getSavingsAccount().printInterestRate();
                     break;
+                case 8:
+                    String direction;
+                    while (true) {
+                        System.out.println("Transfer (1) CHECKING -> SAVINGS or (2) SAVINGS -> CHECKING?");
+                        direction = sc.nextLine();
+                        if (direction.equals("1") || direction.equals("2")) {
+                            break;
+                        }
+                        System.out.println("Invalid direction selected.");
+                    }
+
+                    String directionLabel = direction.equals("1") ? "CHECKING -> SAVINGS" : "SAVINGS -> CHECKING";
+                    double transferAmount = getConfirmedAmount("transfer (" + directionLabel + ")");
+
+                    boolean success;
+                    if (direction.equals("1")) {
+                        success = customer.getCheckingAccount().transfer(customer.getSavingsAccount(), transferAmount);
+                    } else {
+                        success = customer.getSavingsAccount().transfer(customer.getCheckingAccount(), transferAmount);
+                    }
+
+                    if (success) {
+                        System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
+                        System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
+                    }
+                    break;
                 case -1:
                     continueMenu = false;
                     break;
                 default:
                     System.out.println("Invalid selection.");
+            }
+        }
+    }
+
+    private static double getConfirmedAmount(String actionLabel) {
+        while (true) {
+            System.out.print("Enter amount to " + actionLabel + ": ");
+            try {
+                double amount = Double.parseDouble(sc.nextLine());
+                System.out.println(actionLabel + " $" + amount + "?");
+                System.out.println("(1) Confirm  (2) Redo");
+                String confirm = sc.nextLine();
+
+                if (confirm.equals("1")) {
+                    return amount;
+                } else if (confirm.equals("2")) {
+                    continue; // ask again
+                } else {
+                    System.out.println("Invalid selection, please try again.");
+                }
+            } catch (NumberFormatException e) {
+                printMessage("Invalid amount. Please enter a number.");
             }
         }
     }
@@ -178,6 +213,8 @@ public class BankAppRunner {
         System.out.println("(4) to WITHDRAW from SAVINGS ACCOUNT");
         System.out.println("(5) to display CHECKING ACCOUNT BALANCE");
         System.out.println("(6) to display SAVINGS ACCOUNT BALANCE");
+        System.out.println("(7) to display INTEREST RATES");
+        System.out.println("(8) to TRANSFER between CHECKING and SAVINGS");
         System.out.println("(-1) to QUIT");
 
         System.out.println();
@@ -287,23 +324,26 @@ abstract class Account implements AccountOperations {
     }
 
     @Override
-    public void withdraw(double amount) {
+    public boolean withdraw(double amount) {
         if (amount <= this.balance) {
             this.balance -= amount;
             transactionHistory.add("Withdrew $" + amount);
+            return true;
         } else {
             System.out.println("Insufficient funds.");
+            return false;
         }
     }
 
     @Override
-    public void transfer(Account destination, double amount) {
-        if (amount <= this.balance) {
-            this.withdraw(amount);
+    public boolean transfer(Account destination, double amount) {
+        if (this.withdraw(amount)) {
             destination.deposit(amount);
             transactionHistory.add("Transferred $" + amount + " to another account");
+            return true;
         } else {
             System.out.println("Insufficient funds for transfer.");
+            return false;
         }
     }
 
@@ -360,10 +400,7 @@ class SavingsAccount extends Account {
 
 interface AccountOperations {
     void deposit(double amount);
-
-    void withdraw(double amount);
-
-    void transfer(Account destination, double amount);
-
+    boolean withdraw(double amount);
+    boolean transfer(Account destination, double amount);
     void printInterestRate();
 }
