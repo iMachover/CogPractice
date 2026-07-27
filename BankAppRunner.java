@@ -59,35 +59,45 @@ public class BankAppRunner {
     }
 
     private static void RunAdminChoices() {
-        System.out.println("*******************************************");
-        System.out.println("Enter a customer's username to see all available information (or -1 to quit)");
-        String customerUsername = sc.nextLine();
+        boolean continueLookup = true;
 
-        if (customerUsername.equals("-1")) {
-            return;
-        }
+        while (continueLookup) {
+            System.out.println("*******************************************");
+            System.out.println("Enter a customer's username to see all available information (or -1 to quit)");
+            String customerUsername = sc.nextLine();
 
-        User user = map.get(customerUsername);
+            if (customerUsername.equals("-1")) {
+                return;
+            }
 
-        if (user == null || !(user instanceof Customer)) {
-            printMessage("No customer found with username: " + customerUsername);
-            return;
-        }
+            User user = map.get(customerUsername);
 
-        Customer customer = (Customer) user;
+            if (user == null || !(user instanceof Customer)) {
+                printMessage("No customer found with username: " + customerUsername);
+            } else {
 
-        System.out.println("Username: " + customer.getUsername());
-        System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
-        System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+                Customer customer = (Customer) user;
 
-        System.out.println("Checking transaction history:");
-        for (String tx : customer.getCheckingAccount().getTransactionHistory()) {
-            System.out.println("  - " + tx);
-        }
 
-        System.out.println("Savings transaction history:");
-        for (String tx : customer.getSavingsAccount().getTransactionHistory()) {
-            System.out.println("  - " + tx);
+                System.out.println("Username: " + customer.getUsername());
+                System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
+                System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+
+                System.out.println("Checking transaction history:");
+                for (String tx : customer.getCheckingAccount().getTransactionHistory()) {
+                    System.out.println("  - " + tx);
+                }
+
+                System.out.println("Savings transaction history:");
+                for (String tx : customer.getSavingsAccount().getTransactionHistory()) {
+                    System.out.println("  - " + tx);
+                }
+            }
+
+            System.out.println("Look up another customer? Y/N");
+            if (!sc.nextLine().equalsIgnoreCase("Y")) {
+                continueLookup = false;
+            }
         }
     }
 
