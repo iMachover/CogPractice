@@ -6,13 +6,16 @@ import java.util.*;
 public class BankAppRunner {
     static Scanner sc = new Scanner(System.in);
 
-    static Map<String, String> map = new HashMap<>();
+    static Map<String, User> map = new HashMap<>();
 
     static {
-        map.put("admin", "admin123");
-        map.put("rohit", "rohit123");
-        map.put("mohit", "mohit123");
-        map.put("shobhit", "shobhit123");
+        map.put("admin", new Admin("admin", "admin123"));
+        map.put("rohit", new Customer("rohit", "rohit123",
+                new CheckingAccount(100), new SavingsAccount(500)));
+        map.put("mohit", new Customer("mohit", "mohit123",
+                new CheckingAccount(200), new SavingsAccount(1000)));
+        map.put("shobhit", new Customer("shobhit", "shobhit123",
+                new CheckingAccount(50), new SavingsAccount(300)));
     }
 
     public static void main(String[] args) {
@@ -21,8 +24,8 @@ public class BankAppRunner {
         boolean overallLoopFlag = true;
         while (overallLoopFlag) {
             // Main Flow Logic
-            String loggedInUsername = mylogin();
-            redirect(loggedInUsername);
+            User loggedInUser = mylogin();
+            redirect(loggedInUser);
             //
 
             System.out.println("Do you want to continue or not? Y/N");
@@ -33,17 +36,13 @@ public class BankAppRunner {
 
     }
 
-    private static void redirect(String loggedInUsername) {
-        if (loggedInUsername.isEmpty()) {
+    private static void redirect(User loggedInUser) {
+        if (loggedInUser == null) {
             printMessage("Invalid Credentials!");
-            boolean overallContinueFlag = true;
-
+        } else if (loggedInUser instanceof Admin) {
+            adminDashboard(String.valueOf(loggedInUser));
         } else {
-            if (loggedInUsername.equals("admin")) {
-                adminDashboard(loggedInUsername);
-            } else {
-                customerDashboard(loggedInUsername);
-            }
+            customerDashboard(String.valueOf(loggedInUser));
         }
     }
 
@@ -68,7 +67,7 @@ public class BankAppRunner {
         System.out.println("Enter a customer's username to see all available information");
         String customer = sc.nextLine();
 
-        System.out.println( /*name, checking balance, savings balance, transaction history*/)
+        System.out.println("Looking up: " + customer);
     }
 
     private static int RunBankChoices() {
@@ -98,23 +97,19 @@ public class BankAppRunner {
         return choice;
     }
 
-    private static String mylogin() {
+    private static User mylogin() {
         System.out.println("Please enter username and password separated by space: ");
         String usernamePassword = sc.nextLine();
-        // validation
         String[] tokens = usernamePassword.split(" ");
         String enteredUsername = tokens[0];
         String enteredPassword = tokens[1];
 
-        for (Map.Entry<String, String> me : map.entrySet()) {
-            String username = me.getKey();
-            String password = me.getValue();
-            if (username.equals(enteredUsername) && password.equals(enteredPassword)) {
-                return username;
-            }
+        User user = map.get(enteredUsername);
+        if (user != null && user.getPassword().equals(enteredPassword)) {
+            return user;
         }
 
-        return "";
+        return null;
     }
 
     private static void printMessage(String message) {
@@ -155,27 +150,29 @@ public class BankAppRunner {
             }
         }
 
-        class Customer extends User {
-            private CheckingAccount checkingAccount;
-            private SavingsAccount savingsAccount;
+class Customer extends User {
+    private CheckingAccount checkingAccount;
+    private SavingsAccount savingsAccount;
 
-            public Customer(String username, String password) {
-                super(username, password);
-            }
+    public Customer(String username, String password, CheckingAccount checkingAccount, SavingsAccount savingsAccount) {
+        super(username, password);
+        this.checkingAccount = checkingAccount;
+        this.savingsAccount = savingsAccount;
+    }
 
-            @Override
-            public String getRole() {
-                return "CUSTOMER";
-            }
+    @Override
+    public String getRole() {
+        return "CUSTOMER";
+    }
 
-            public CheckingAccount getCheckingAccount() {
-                return checkingAccount;
-            }
+    public CheckingAccount getCheckingAccount() {
+        return checkingAccount;
+    }
 
-            public SavingsAccount getSavingsAccount() {
-                return savingsAccount;
-            }
-        }
+    public SavingsAccount getSavingsAccount() {
+        return savingsAccount;
+    }
+}
 
 
 abstract class Account implements AccountOperations {
