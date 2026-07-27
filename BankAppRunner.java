@@ -113,12 +113,27 @@ public class BankAppRunner {
                         System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
                     }
                     break;
+                case 9:
+                    printTransactionHistory(customer);
+                    break;
                 case -1:
                     continueMenu = false;
                     break;
                 default:
                     System.out.println("Invalid selection.");
             }
+        }
+    }
+
+    private static void printTransactionHistory(Customer customer) {
+        System.out.println("--- Checking transaction history ---");
+        for (String tx : customer.getCheckingAccount().getTransactionHistory()) {
+            System.out.println("  - " + tx);
+        }
+
+        System.out.println("--- Savings transaction history ---");
+        for (String tx : customer.getSavingsAccount().getTransactionHistory()) {
+            System.out.println("  - " + tx);
         }
     }
 
@@ -188,15 +203,7 @@ public class BankAppRunner {
                 System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
                 System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
 
-                System.out.println("Checking transaction history:");
-                for (String tx : customer.getCheckingAccount().getTransactionHistory()) {
-                    System.out.println("  - " + tx);
-                }
-
-                System.out.println("Savings transaction history:");
-                for (String tx : customer.getSavingsAccount().getTransactionHistory()) {
-                    System.out.println("  - " + tx);
-                }
+                printTransactionHistory(customer);
             }
 
             continueLookup = promptYesNo("Look up another customer? Y/N");
@@ -215,6 +222,7 @@ public class BankAppRunner {
         System.out.println("(6) to display SAVINGS ACCOUNT BALANCE");
         System.out.println("(7) to display INTEREST RATES");
         System.out.println("(8) to TRANSFER between CHECKING and SAVINGS");
+        System.out.println("(9) to display TRANSACTION HISTORY");
         System.out.println("(-1) to QUIT");
 
         System.out.println();
