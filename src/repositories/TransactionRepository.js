@@ -9,6 +9,10 @@ class TransactionRepository {
   async findTransactionsByAccountId(accountId) {
     return await Transaction.find({ account: accountId }).sort({ createdAt: -1 });
   }
+
+  async deleteTransactionsByAccountId(accountId) {
+    return await Transaction.deleteMany({ account: accountId });
+  }
 }
 
 module.exports = new TransactionRepository();

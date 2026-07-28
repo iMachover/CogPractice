@@ -13,6 +13,14 @@ class UserRepository {
   async findAllUsers() {
     return await User.find();
   }
+
+  async findUserByEmail(email) {
+    return await User.findOne({ email });
+  }
+
+  async deleteUserById(userId) {
+    return await User.findByIdAndDelete(userId);
+  }
 }
 
 module.exports = new UserRepository();

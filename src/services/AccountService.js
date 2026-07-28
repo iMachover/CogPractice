@@ -88,6 +88,17 @@ class AccountService {
     await this.getAccount(accountId);
     return await transactionRepository.findTransactionsByAccountId(accountId);
   }
+
+  async deleteAccount(accountId) {
+    // Verify account exists first
+    await this.getAccount(accountId);
+
+    // Delete all related transactions
+    await transactionRepository.deleteTransactionsByAccountId(accountId);
+
+    // Delete the account itself
+    await accountRepository.deleteAccountById(accountId);
+  }
 }
 
 module.exports = new AccountService();

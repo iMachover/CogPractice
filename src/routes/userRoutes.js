@@ -35,4 +35,15 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/users/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const userService = require('../services/UserService');
+    await userService.deleteUser(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

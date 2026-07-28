@@ -15,9 +15,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const authMiddleware = require('./src/middleware/authMiddleware');
+
 // Routes
-app.use('/api/accounts', require('./src/routes/accountRoutes'));
-app.use('/api/users', require('./src/routes/userRoutes'));
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/accounts', authMiddleware, require('./src/routes/accountRoutes'));
+app.use('/api/users', authMiddleware, require('./src/routes/userRoutes'));
 
 
 const PORT = process.env.PORT || 3000;

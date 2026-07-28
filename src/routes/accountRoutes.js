@@ -17,4 +17,7 @@ router.post('/:id/withdraw', accountController.withdraw);
 // GET /api/accounts/{id}/transactions
 router.get('/:id/transactions', accountController.getTransactions);
 
+// DELETE /api/accounts/{id}
+router.delete('/:id', accountController.deleteAccount);
+
 module.exports = router;

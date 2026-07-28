@@ -18,6 +18,14 @@ class AccountRepository {
       { new: true }
     );
   }
+
+  async findAccountsByUserId(userId) {
+    return await Account.find({ user: userId });
+  }
+
+  async deleteAccountById(accountId) {
+    return await Account.findByIdAndDelete(accountId);
+  }
 }
 
 module.exports = new AccountRepository();
