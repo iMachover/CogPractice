@@ -6,16 +6,12 @@ import java.util.*;
 public class BankAppRunner {
     static Scanner sc = new Scanner(System.in);
 
-    static Map<String, User> map = new HashMap<>();
-
+    static Bank bank = new Bank();
     static {
-        map.put("admin", new Admin("admin", "admin123"));
-        map.put("rohit", new Customer("rohit", "rohit123",
-                new CheckingAccount(100), new SavingsAccount(500)));
-        map.put("mohit", new Customer("mohit", "mohit123",
-                new CheckingAccount(200), new SavingsAccount(1000)));
-        map.put("shobhit", new Customer("shobhit", "shobhit123",
-                new CheckingAccount(50), new SavingsAccount(300)));
+        bank.addUser(new Admin("admin", "admin123"));
+        bank.addUser(new Customer("rohit", "rohit123", new CheckingAccount(100), new SavingsAccount(500)));
+        bank.addUser(new Customer("mohit", "mohit123", new CheckingAccount(200), new SavingsAccount(1000)));
+        bank.addUser(new Customer("shobhit", "shobhit123", new CheckingAccount(50), new SavingsAccount(300)));
     }
 
     public static void main(String[] args) {
@@ -191,13 +187,10 @@ public class BankAppRunner {
                 return;
             }
 
-            User user = map.get(customerUsername);
-
-            if (user == null || !(user instanceof Customer)) {
+            Customer customer = bank.findCustomer(customerUsername);
+            if (customer == null) {
                 printMessage("No customer found with username: " + customerUsername);
             } else {
-
-                Customer customer = (Customer) user;
 
                 System.out.println("Username: " + customer.getUsername());
                 System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
@@ -243,16 +236,17 @@ public class BankAppRunner {
     private static User mylogin() {
         System.out.println("Please enter username and password separated by space: ");
         String usernamePassword = sc.nextLine();
-        String[] tokens = usernamePassword.split(" ");
+        String[] tokens = usernamePassword.trim().split("\\s+");
+
+        if (tokens.length != 2) {
+            printMessage("Please enter both a username and password, separated by a space.");
+            return null;
+        }
+
         String enteredUsername = tokens[0];
         String enteredPassword = tokens[1];
 
-        User user = map.get(enteredUsername);
-        if (user != null && user.getPassword().equals(enteredPassword)) {
-            return user;
-        }
-
-        return null;
+        return bank.login(enteredUsername, enteredPassword);
     }
 
     private static void printMessage(String message) {
@@ -327,20 +321,30 @@ abstract class Account implements AccountOperations {
 
     @Override
     public void deposit(double amount) {
-        this.balance += amount;
+        if (amount <= 0) {
+            System.out.println("Deposit amount must be greater than zero.");
+            return;
+        }
+
+        balance += amount;
         transactionHistory.add("Deposited $" + amount);
     }
 
     @Override
     public boolean withdraw(double amount) {
-        if (amount <= this.balance) {
-            this.balance -= amount;
-            transactionHistory.add("Withdrew $" + amount);
-            return true;
-        } else {
+        if (amount <= 0) {
+            System.out.println("Withdrawal amount must be greater than zero.");
+            return false;
+        }
+
+        if (amount > balance) {
             System.out.println("Insufficient funds.");
             return false;
         }
+
+        balance -= amount;
+        transactionHistory.add("Withdrew $" + amount);
+        return true;
     }
 
     @Override
@@ -411,4 +415,33 @@ interface AccountOperations {
     boolean withdraw(double amount);
     boolean transfer(Account destination, double amount);
     void printInterestRate();
+}
+
+class Bank {
+    private Map<String, User> users;
+
+    public Bank() {
+        this.users = new HashMap<>();
+    }
+
+    public boolean addUser(User user) {
+        if (user == null || users.containsKey(user.getUsername())) {
+            return false;
+        }
+        users.put(user.getUsername(), user);
+        return true;
+    }
+
+    public User login(String username, String password) {
+        User user = users.get(username);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        return null;
+    }
+
+    public Customer findCustomer(String username) {
+        User user = users.get(username);
+        return (user instanceof Customer) ? (Customer) user : null;
+    }
 }
