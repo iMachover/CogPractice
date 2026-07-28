@@ -53,29 +53,29 @@ public class BankAppRunner {
             switch (choice) {
                 case 1:
                     customer.getCheckingAccount().deposit(getConfirmedAmount("deposit into CHECKING"));
-                    System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
+                    System.out.printf("Your new CHECKING balance is $%.2f%n", customer.getCheckingAccount().getBalance());
                     break;
                 case 2:
                     double checkingWithdrawAmt = getConfirmedAmount("withdraw from CHECKING");
                     if (customer.getCheckingAccount().withdraw(checkingWithdrawAmt)) {
-                        System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
+                        System.out.printf("Your new CHECKING balance is $%.2f%n", customer.getCheckingAccount().getBalance());
                     }
                     break;
                 case 3:
                     customer.getSavingsAccount().deposit(getConfirmedAmount("deposit into SAVINGS"));
-                    System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
+                    System.out.printf("Your new SAVINGS balance is $%.2f%n", customer.getSavingsAccount().getBalance());
                     break;
                 case 4:
                     double savingsWithdrawAmt = getConfirmedAmount("withdraw from SAVINGS");
                     if (customer.getSavingsAccount().withdraw(savingsWithdrawAmt)) {
-                        System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
+                        System.out.printf("Your new SAVINGS balance is $%.2f%n", customer.getSavingsAccount().getBalance());
                     }
                     break;
                 case 5:
-                    System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
+                    System.out.printf("Checking balance: $%.2f%n", customer.getCheckingAccount().getBalance());
                     break;
                 case 6:
-                    System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+                    System.out.printf("Savings balance: $%.2f%n", customer.getSavingsAccount().getBalance());
                     break;
                 case 7:
                     System.out.println("--- Checking ---");
@@ -105,8 +105,8 @@ public class BankAppRunner {
                     }
 
                     if (success) {
-                        System.out.println("Your new CHECKING balance is $" + customer.getCheckingAccount().getBalance());
-                        System.out.println("Your new SAVINGS balance is $" + customer.getSavingsAccount().getBalance());
+                        System.out.printf("Your new CHECKING balance is $%.2f%n", customer.getCheckingAccount().getBalance());
+                        System.out.printf("Your new SAVINGS balance is $%.2f%n", customer.getSavingsAccount().getBalance());
                     }
                     break;
                 case 9:
@@ -193,8 +193,8 @@ public class BankAppRunner {
             } else {
 
                 System.out.println("Username: " + customer.getUsername());
-                System.out.println("Checking balance: $" + customer.getCheckingAccount().getBalance());
-                System.out.println("Savings balance: $" + customer.getSavingsAccount().getBalance());
+                System.out.printf("Checking balance: $%.2f%n", customer.getCheckingAccount().getBalance());
+                System.out.printf("Savings balance: $%.2f%n", customer.getSavingsAccount().getBalance());
 
                 printTransactionHistory(customer);
             }
@@ -397,11 +397,6 @@ class SavingsAccount extends Account {
     public SavingsAccount(double balance, double interestRate) {
         super(balance);
         this.interestRate = interestRate;
-    }
-
-    public void applyInterest() {
-        double interest = getBalance() * interestRate;
-        deposit(interest);
     }
 
     @Override
