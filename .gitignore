@@ -1,0 +1,7 @@
+node_modules/
+.idea/
+.vscode/
+*.class
+*.iml
+out/
+New Text Document.txt
