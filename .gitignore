@@ -4,4 +4,5 @@ node_modules/
 *.class
 *.iml
 out/
-New Text Document.txt
+
+.env
