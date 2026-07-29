@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const Services = () => {
   const [users, setUsers] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -12,20 +13,28 @@ const Services = () => {
   const [email, setEmail] = useState('test@example.com');
   const [password, setPassword] = useState('password123');
   
-  // Role state
+  // Decoded user state
+  const [userId, setUserId] = useState('');
   const [role, setRole] = useState('customer');
 
-  // Create state
+  // Admin: Create User state
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+
+  // Customer: Account action states
+  const [newAccountType, setNewAccountType] = useState('CHECKING');
+  const [transactionAmounts, setTransactionAmounts] = useState({}); // Key: accountId, Value: amount
 
   useEffect(() => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        setUserId(decoded.user.id);
         setRole(decoded.user.role || 'customer');
         if (decoded.user.role === 'admin') {
           fetchUsers();
+        } else {
+          fetchAccounts();
         }
       } catch (err) {
         setToken('');
@@ -68,6 +77,24 @@ const Services = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('http://localhost:3000/api/accounts', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAccounts(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch accounts');
+      if (err.response?.status === 401) {
+        setToken('');
+        localStorage.removeItem('token');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this customer?')) return;
     try {
@@ -92,6 +119,68 @@ const Services = () => {
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to create user');
     }
+  };
+
+  // Open Checking/Savings Account
+  const handleOpenAccount = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:3000/api/accounts', {
+        userId: userId,
+        accountType: newAccountType
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAccounts([...accounts, res.data]);
+      alert(`Successfully opened a new ${newAccountType} account!`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to open account');
+    }
+  };
+
+  // Deposit Money
+  const handleDeposit = async (accountId) => {
+    const amount = parseFloat(transactionAmounts[accountId]);
+    if (!amount || amount <= 0) {
+      alert('Please enter a positive deposit amount.');
+      return;
+    }
+    try {
+      const res = await axios.post(`http://localhost:3000/api/accounts/${accountId}/deposit`, { amount }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAccounts(accounts.map(acc => acc._id === accountId ? { ...acc, balance: res.data.balance } : acc));
+      setTransactionAmounts({ ...transactionAmounts, [accountId]: '' });
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Deposit failed');
+    }
+  };
+
+  // Withdraw Money
+  const handleWithdraw = async (accountId) => {
+    const amount = parseFloat(transactionAmounts[accountId]);
+    if (!amount || amount <= 0) {
+      alert('Please enter a positive withdrawal amount.');
+      return;
+    }
+    try {
+      const res = await axios.post(`http://localhost:3000/api/accounts/${accountId}/withdraw`, { amount }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAccounts(accounts.map(acc => acc._id === accountId ? { ...acc, balance: res.data.balance } : acc));
+      setTransactionAmounts({ ...transactionAmounts, [accountId]: '' });
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Withdrawal failed');
+    }
+  };
+
+  const handleAmountChange = (accountId, val) => {
+    setTransactionAmounts({
+      ...transactionAmounts,
+      [accountId]: val
+    });
   };
 
   if (!token) {
@@ -177,19 +266,29 @@ const Services = () => {
             </form>
           </>
         ) : (
-          <p style={{ color: 'var(--text-muted)' }}>Welcome to your customer portal. From here you can manage your personal accounts.</p>
+          <div>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Open a Banking Account</h3>
+            <form onSubmit={handleOpenAccount} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <select 
+                value={newAccountType} 
+                onChange={(e) => setNewAccountType(e.target.value)}
+                style={{ padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)', outline: 'none' }}
+              >
+                <option value="CHECKING">Checking Account</option>
+                <option value="SAVINGS">Savings Account</option>
+              </select>
+              <button className="btn" type="submit">Open Account</button>
+            </form>
+          </div>
         )}
       </div>
 
-      {role === 'admin' && (
+      {role === 'admin' ? (
         <div className="card">
           <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Active Customers (Admin Only)</h3>
-          
           {loading && <p style={{ color: 'var(--text-muted)' }}>Retrieving records...</p>}
           {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
-          
           {!loading && !error && users.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No customer records found.</p>}
-          
           {!loading && !error && users.length > 0 && (
             <div style={{ overflowX: 'auto' }}>
               <table>
@@ -217,6 +316,76 @@ const Services = () => {
                         >
                           Remove
                         </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="card">
+          <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>Your Accounts</h3>
+          {loading && <p style={{ color: 'var(--text-muted)' }}>Fetching balances...</p>}
+          {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
+          {!loading && !error && accounts.length === 0 && (
+            <p style={{ color: 'var(--text-muted)' }}>You do not have any active accounts. Open one above to get started!</p>
+          )}
+          {!loading && !error && accounts.length > 0 && (
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Account ID</th>
+                    <th>Account Type</th>
+                    <th>Current Balance</th>
+                    <th>Quick Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts.map((acc) => (
+                    <tr key={acc._id}>
+                      <td><code style={{ background: '#f4f5f7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem' }}>{acc._id}</code></td>
+                      <td>
+                        <span style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '4px', 
+                          fontSize: '0.8rem', 
+                          fontWeight: 'bold', 
+                          background: acc.accountType === 'CHECKING' ? '#e2f0fd' : '#e6f9ec', 
+                          color: acc.accountType === 'CHECKING' ? '#0d6efd' : '#198754' 
+                        }}>
+                          {acc.accountType}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--primary-color)' }}>
+                        ${acc.balance.toFixed(2)}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <input 
+                            type="number" 
+                            placeholder="$0.00" 
+                            value={transactionAmounts[acc._id] || ''} 
+                            onChange={(e) => handleAmountChange(acc._id, e.target.value)}
+                            style={{ width: '90px', padding: '6px', fontSize: '0.85rem', marginBottom: 0 }}
+                          />
+                          <button 
+                            className="btn" 
+                            style={{ padding: '6px 12px', fontSize: '0.85rem', background: '#198754' }}
+                            onClick={() => handleDeposit(acc._id)}
+                          >
+                            Deposit
+                          </button>
+                          <button 
+                            className="btn" 
+                            style={{ padding: '6px 12px', fontSize: '0.85rem', background: '#0d6efd' }}
+                            onClick={() => handleWithdraw(acc._id)}
+                          >
+                            Withdraw
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
