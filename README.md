@@ -26,14 +26,25 @@ A backend REST API for a simple banking system built with Node.js, Express, and 
 
 ## API Endpoints
 
-### Users (Helper Routes)
-* **Create User**
-  * `POST /api/users`
-  * Body: `{ "name": "String", "email": "String" }`
+### Authentication (JWT)
+* **Register**
+  * `POST /api/auth/register`
+  * Body: `{ "name": "String", "email": "String", "password": "String" }`
+* **Login**
+  * `POST /api/auth/login`
+  * Body: `{ "email": "String", "password": "String" }`
+  * Returns: `{ "token": "JWT_TOKEN", "user": { ... } }`
+
+> **Note**: All routes below under **Users** and **Accounts** require a valid JWT token to be passed in the `Authorization` header as a Bearer token (`Authorization: Bearer <token>`).
+
+### Users
 * **Get All Users**
   * `GET /api/users`
 * **Get User by ID**
   * `GET /api/users/:id`
+* **Delete User** *(Cascading Delete)*
+  * `DELETE /api/users/:id`
+  * *Deletes the user, all their accounts, and all related transactions.*
 
 ### Accounts
 * **Create Account**
@@ -49,8 +60,13 @@ A backend REST API for a simple banking system built with Node.js, Express, and 
   * Body: `{ "amount": Number }`
 * **Get Transaction History**
   * `GET /api/accounts/:id/transactions`
+* **Delete Account** *(Cascading Delete)*
+  * `DELETE /api/accounts/:id`
+  * *Deletes the account and all related transactions.*
 
 ## Features & Business Rules
+- JWT Authentication secures API endpoints.
+- Cascading deletes ensure no orphaned accounts or transactions are left in the database.
 - Withdrawal amounts cannot exceed the current account balance.
 - Deposits and withdrawals must be positive numbers.
 - A transaction record is created and stored in the database for every successful deposit or withdrawal.
