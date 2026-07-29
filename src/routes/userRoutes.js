@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userRepository = require('../repositories/UserRepository');
+const roleMiddleware = require('../middleware/roleMiddleware');
 
 // Helper route to create a user for testing
 // POST /api/users
-router.post('/', async (req, res) => {
+router.post('/', roleMiddleware, async (req, res) => {
   try {
     const { name, email } = req.body;
     const user = await userRepository.createUser({ name, email });
@@ -15,7 +16,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/users
-router.get('/', async (req, res) => {
+router.get('/', roleMiddleware, async (req, res) => {
   try {
     const users = await userRepository.findAllUsers();
     res.json(users);
@@ -36,7 +37,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // DELETE /api/users/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', roleMiddleware, async (req, res) => {
   try {
     const userService = require('../services/UserService');
     await userService.deleteUser(req.params.id);

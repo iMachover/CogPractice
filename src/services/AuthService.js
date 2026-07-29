@@ -43,6 +43,7 @@ class AuthService {
     const payload = {
       user: {
         id: user._id,
+        role: user.role,
       },
     };
 
