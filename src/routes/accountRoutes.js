@@ -5,6 +5,9 @@ const accountController = require('../controllers/AccountController');
 // POST /api/accounts
 router.post('/', accountController.createAccount);
 
+// GET /api/accounts (get user accounts)
+router.get('/', accountController.getAccountsForUser);
+
 // GET /api/accounts/{id}
 router.get('/:id', accountController.getAccount);
 
