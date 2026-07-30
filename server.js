@@ -6,6 +6,12 @@ const connectDB = require('./src/config/db');
 // Load environment variables
 dotenv.config();
 
+// Verify critical environment variables at startup
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET environment variable is not defined.');
+  process.exit(1);
+}
+
 // Connect to MongoDB
 connectDB();
 

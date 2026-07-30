@@ -82,7 +82,8 @@ class AccountController {
       const accounts = await accountService.getAccountsByUserId(req.user.id);
       res.json(accounts);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error("Internal Server Error in getAccountsForUser:", error);
+      res.status(500).json({ message: 'An unexpected system error occurred. Please try again later.' });
     }
   }
 }

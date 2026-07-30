@@ -21,7 +21,8 @@ router.get('/', roleMiddleware, async (req, res) => {
     const users = await userRepository.findAllUsers();
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Internal Server Error in GET /api/users:", error);
+    res.status(500).json({ message: 'An unexpected system error occurred. Please try again later.' });
   }
 });
 
@@ -32,7 +33,8 @@ router.get('/:id', async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(`Internal Server Error in GET /api/users/${req.params.id}:`, error);
+    res.status(500).json({ message: 'An unexpected system error occurred. Please try again later.' });
   }
 });
 

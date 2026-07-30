@@ -49,7 +49,7 @@ class AuthService {
 
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'secret123',
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
