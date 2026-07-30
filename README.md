@@ -7,9 +7,12 @@ A modern, professional web interface for the National Bank application, built wi
 - **Professional UI/UX:** A clean, crisp, and high-trust corporate design using vanilla CSS.
 - **Routing:** Client-side navigation handled by React Router (`react-router-dom`).
 - **Secure Authentication:** JWT-based secure login integration with the backend.
+- **Role-Based Dashboards:** 
+  - **Admin Dashboard:** Manage customers, register new accounts, and view full transaction audit histories.
+  - **Customer Dashboard:** Open checking/savings accounts, perform deposits/withdrawals, and view account-level transaction history.
 - **Customer Management (CRUD):** 
   - View all registered customers.
-  - Create new customer profiles.
+  - Create new customer profiles (with strong password enforcement).
   - Securely delete existing customers.
 
 ## Tech Stack
@@ -52,10 +55,10 @@ src/
 │   ├── Footer.jsx    # Page footer
 │   └── Layout.jsx    # Global page wrapper
 ├── pages/            # Route components
-│   ├── Home.jsx      # Landing page
+│   ├── Home.jsx      # Landing page with smart CTA routing
 │   ├── About.jsx     # About Us information
 │   ├── Contact.jsx   # Contact details
-│   └── Services.jsx  # Protected customer CRUD operations
+│   └── Services.jsx  # Authentication, Dashboards, and Transactions
 ├── App.jsx           # Main application routing
 ├── main.jsx          # React entry point
 └── index.css         # Global professional design system styles
