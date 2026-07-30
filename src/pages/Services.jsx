@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-const API = "https://kldrxt5cja.execute-api.us-east-1.amazonaws.com/default";
+const API = "https://k77ixqj4u5.execute-api.us-east-1.amazonaws.com";
 
 const Services = () => {
   const [users, setUsers] = useState([]);
@@ -11,9 +11,15 @@ const Services = () => {
   const [error, setError] = useState("");
 
   // Login state
+  const [authMode, setAuthMode] = useState("register");
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Public registration state
+  const [registerName, setRegisterName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
 
   // Decoded user state
   const [userId, setUserId] = useState("");
@@ -65,6 +71,34 @@ const Services = () => {
       localStorage.setItem("token", token);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await axios.post(`${API}/api/auth/register`, {
+        name: registerName,
+        email: registerEmail,
+        password: registerPassword,
+      });
+
+      const res = await axios.post(`${API}/api/auth/login`, {
+        email: registerEmail,
+        password: registerPassword,
+      });
+      const { token } = res.data;
+      setToken(token);
+      localStorage.setItem("token", token);
+      setRegisterName("");
+      setRegisterEmail("");
+      setRegisterPassword("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Account creation failed");
     } finally {
       setLoading(false);
     }
@@ -207,26 +241,81 @@ const Services = () => {
 
   if (!token) {
     return (
-      <div className="card" style={{ maxWidth: "400px", margin: "4rem auto" }}>
-        <h2 style={{ marginBottom: "1.5rem", textAlign: "center" }}>Secure Login</h2>
+      <div className="card" style={{ maxWidth: "440px", margin: "4rem auto" }}>
+        <div style={{ display: "flex", border: "1px solid var(--border-color)", borderRadius: "4px", overflow: "hidden", marginBottom: "1.5rem" }}>
+          <button
+            type="button"
+            onClick={() => { setAuthMode("register"); setError(""); }}
+            style={{
+              flex: 1,
+              padding: "10px",
+              border: "none",
+              background: authMode === "register" ? "var(--primary-color)" : "var(--surface-color)",
+              color: authMode === "register" ? "#ffffff" : "var(--text-main)",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Create Account
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMode("login"); setError(""); }}
+            style={{
+              flex: 1,
+              padding: "10px",
+              border: "none",
+              borderLeft: "1px solid var(--border-color)",
+              background: authMode === "login" ? "var(--primary-color)" : "var(--surface-color)",
+              color: authMode === "login" ? "#ffffff" : "var(--text-main)",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Sign In
+          </button>
+        </div>
+        <h2 style={{ marginBottom: "1.5rem", textAlign: "center" }}>
+          {authMode === "register" ? "Create Account" : "Secure Login"}
+        </h2>
         {error && (
           <div style={{ color: "var(--danger)", marginBottom: "1rem", padding: "10px", background: "#ffebe6", borderRadius: "4px", fontSize: "0.9rem" }}>
             {error}
           </div>
         )}
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Email Address</label>
-            <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ marginBottom: 0 }} />
-          </div>
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Password</label>
-            <input type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ marginBottom: 0 }} />
-          </div>
-          <button className="btn" type="submit" style={{ width: "100%", padding: "12px" }} disabled={loading}>
-            {loading ? "Authenticating..." : "Sign In"}
-          </button>
-        </form>
+        {authMode === "register" ? (
+          <form onSubmit={handleRegister}>
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Full Name</label>
+              <input type="text" placeholder="Enter your full name" value={registerName} onChange={(e) => setRegisterName(e.target.value)} required style={{ marginBottom: 0 }} />
+            </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Email Address</label>
+              <input type="email" placeholder="Enter your email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} required style={{ marginBottom: 0 }} />
+            </div>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Password</label>
+              <input type="password" placeholder="8+ chars, 1 uppercase, 1 number" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} required style={{ marginBottom: 0 }} />
+            </div>
+            <button className="btn" type="submit" style={{ width: "100%", padding: "12px" }} disabled={loading}>
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Email Address</label>
+              <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ marginBottom: 0 }} />
+            </div>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.9rem" }}>Password</label>
+              <input type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ marginBottom: 0 }} />
+            </div>
+            <button className="btn" type="submit" style={{ width: "100%", padding: "12px" }} disabled={loading}>
+              {loading ? "Authenticating..." : "Sign In"}
+            </button>
+          </form>
+        )}
       </div>
     );
   }
@@ -264,14 +353,14 @@ const Services = () => {
           </>
         ) : (
           <div>
-            <h3 style={{ marginBottom: "1rem", fontSize: "1.1rem" }}>Open a Banking Account</h3>
+            <h3 style={{ marginBottom: "1rem", fontSize: "1.1rem" }}>Create a Banking Account</h3>
             <form onSubmit={handleOpenAccount} style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               <select value={newAccountType} onChange={(e) => setNewAccountType(e.target.value)}
                 style={{ padding: "10px", borderRadius: "4px", border: "1px solid var(--border-color)", outline: "none" }}>
                 <option value="CHECKING">Checking Account</option>
                 <option value="SAVINGS">Savings Account</option>
               </select>
-              <button className="btn" type="submit">Open Account</button>
+              <button className="btn" type="submit">Create Account</button>
             </form>
           </div>
         )}
@@ -362,7 +451,7 @@ const Services = () => {
           {loading && <p style={{ color: "var(--text-muted)" }}>Fetching balances...</p>}
           {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
           {!loading && !error && accounts.length === 0 && (
-            <p style={{ color: "var(--text-muted)" }}>You do not have any active accounts. Open one above to get started!</p>
+            <p style={{ color: "var(--text-muted)" }}>You do not have any active accounts. Create one above to get started!</p>
           )}
           {!loading && !error && accounts.length > 0 && (
             <div style={{ overflowX: "auto" }}>

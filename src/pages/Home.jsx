@@ -17,7 +17,7 @@ const Home = () => {
           style={{ fontSize: '1.1rem', padding: '12px 32px' }}
           onClick={() => navigate('/services')}
         >
-          Open an Account
+          Create Account
         </button>
       </div>
       

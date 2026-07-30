@@ -32,3 +32,8 @@ dist-ssr/
 # Vite output
 dist/
 temp_frontend/
+
+# Local deployment/package-manager artifacts
+.pnpm-store/
+frontend-deploy.zip
+frontend deploy dump/
