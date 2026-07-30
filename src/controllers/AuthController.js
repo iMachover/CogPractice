@@ -8,8 +8,11 @@ class AuthController {
     } catch (error) {
       if (error.message === 'User already exists') {
         res.status(400).json({ message: error.message });
+      } else if (error.message.startsWith('Password must')) {
+        res.status(400).json({ message: error.message });
       } else {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Internal Server Error in register:', error);
+        res.status(500).json({ message: 'An unexpected system error occurred. Please try again later.' });
       }
     }
   }
