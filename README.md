@@ -46,6 +46,14 @@ Before you begin, ensure you have the backend running. The backend API should be
    ```
    This will generate a `dist` directory with the optimized production files.
 
+## Testing with Admin Account
+
+To test admin-only features (such as viewing all customers or managing accounts), you can use the following credentials:
+- **Email/Username:** `admin@test.com`
+- **Password:** `Admin123`
+
+*Note: Normally, to create an admin account, you would need to create a new user account through the application and then manually change their role permission directly in the MongoDB database. To simplify testing, these admin account credentials are provided.*
+
 ## Project Structure
 
 ```
