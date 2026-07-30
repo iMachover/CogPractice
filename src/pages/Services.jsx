@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-const API = "https://kldrxt5cja.execute-api.us-east-1.amazonaws.com/default/student-ikemachover-rest-api";
+const API = "https://kldrxt5cja.execute-api.us-east-1.amazonaws.com/default";
 
 const Services = () => {
   const [users, setUsers] = useState([]);
