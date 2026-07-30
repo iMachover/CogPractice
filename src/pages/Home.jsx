@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom';
+
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div style={{ marginTop: '2rem' }}>
       <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem', borderTop: '4px solid var(--primary-color)' }}>
@@ -8,12 +12,18 @@ const Home = () => {
         <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 2.5rem auto', lineHeight: '1.6' }}>
           Experience secure, reliable, and modern financial services. Manage your accounts, transfer funds, and grow your wealth with confidence.
         </p>
-        <button className="btn" style={{ fontSize: '1.1rem', padding: '12px 32px' }}>Open an Account</button>
+        <button
+          className="btn"
+          style={{ fontSize: '1.1rem', padding: '12px 32px' }}
+          onClick={() => navigate('/services')}
+        >
+          Open an Account
+        </button>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
         <div className="card">
-          <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>Checking & Savings</h3>
+          <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>Checking &amp; Savings</h3>
           <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>High-yield options with zero monthly maintenance fees.</p>
         </div>
         <div className="card">
@@ -30,3 +40,4 @@ const Home = () => {
 };
 
 export default Home;
+

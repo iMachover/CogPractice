@@ -22,6 +22,7 @@ const Services = () => {
   // Admin: Create User state
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   // Customer: Account action states
   const [newAccountType, setNewAccountType] = useState("CHECKING");
@@ -140,10 +141,14 @@ const Services = () => {
   const createUser = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API}/api/users`, { name: newName, email: newEmail }, { headers: authHeaders });
-      setUsers([...users, res.data]);
+      // Route through /api/auth/register so password is properly hashed and validated
+      await axios.post(`${API}/api/auth/register`, { name: newName, email: newEmail, password: newPassword });
+      // Refresh the user list
+      await fetchUsers();
       setNewName("");
       setNewEmail("");
+      setNewPassword("");
+      alert(`Customer ${newName} registered successfully!`);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create user");
     }
@@ -250,6 +255,9 @@ const Services = () => {
               </div>
               <div style={{ flex: 1, minWidth: "200px" }}>
                 <input type="email" placeholder="Email Address" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} required style={{ marginBottom: 0 }} />
+              </div>
+              <div style={{ flex: 1, minWidth: "200px" }}>
+                <input type="password" placeholder="Password (8+ chars, 1 uppercase, 1 number)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required style={{ marginBottom: 0 }} />
               </div>
               <button className="btn" type="submit" style={{ whiteSpace: "nowrap" }}>Create Profile</button>
             </form>
