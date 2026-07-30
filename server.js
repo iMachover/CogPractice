@@ -35,6 +35,12 @@ app.use('/api/users', authMiddleware, require('./src/routes/userRoutes'));
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server only if we are running this file directly (local dev)
+// If imported as a module (e.g. by Lambda), just export the app
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
