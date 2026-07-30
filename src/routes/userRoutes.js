@@ -6,12 +6,21 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 
 router.use(authMiddleware);
 
-// Helper route to create a user for testing
+// Helper route to create a user for testing (Admin only)
 router.post("/", roleMiddleware, async (req, res) => {
   try {
-    const { name, email } = req.body;
-    const user = await userRepository.createUser({ name, email });
-    res.status(201).json(user);
+    const { name, email, password } = req.body;
+    
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const authService = require('../services/AuthService');
+    const user = await authService.register({ name, email, password });
+    
+    // Remove the password hash from the response
+    const userResponse = { id: user._id, name: user.name, email: user.email, role: user.role };
+    res.status(201).json(userResponse);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
