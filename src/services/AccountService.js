@@ -93,6 +93,10 @@ class AccountService {
     return await accountRepository.findAccountsByUserId(userId);
   }
 
+  async getAllAccounts() {
+    return await accountRepository.findAllAccounts();
+  }
+
   async deleteAccount(accountId) {
     // Verify account exists first
     await this.getAccount(accountId);

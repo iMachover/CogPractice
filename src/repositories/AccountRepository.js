@@ -23,6 +23,10 @@ class AccountRepository {
     return await Account.find({ user: userId });
   }
 
+  async findAllAccounts() {
+    return await Account.find().populate('user', 'name email');
+  }
+
   async deleteAccountById(accountId) {
     return await Account.findByIdAndDelete(accountId);
   }

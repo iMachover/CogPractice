@@ -79,7 +79,12 @@ class AccountController {
 
   async getAccountsForUser(req, res) {
     try {
-      const accounts = await accountService.getAccountsByUserId(req.user.id);
+      let accounts;
+      if (req.user.role === 'admin') {
+        accounts = await accountService.getAllAccounts();
+      } else {
+        accounts = await accountService.getAccountsByUserId(req.user.id);
+      }
       res.json(accounts);
     } catch (error) {
       console.error("Internal Server Error in getAccountsForUser:", error);
